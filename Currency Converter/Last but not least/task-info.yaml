@@ -1,25 +1,5 @@
 type: edu
 files:
-- name: cconverter/cconverter.py
-  visible: true
-  text: |-
-    # write your code here!
-
-    cc_amount = float(input())
-
-    # cc_x_rate = float(input("Please, enter the exchange rate:"))
-    rates = {
-        'RUB': 2.98,
-        'ARS': 0.82,
-        'HNL': 0.17,
-        'AUD': 1.9622,
-        'MAD': 0.208
-    }
-
-    for rate in rates:
-        selling_sum = cc_amount * rates[rate]
-        print('I will get', selling_sum, rate, 'from the sale of', cc_amount, 'conicoins.')
-  learner_created: false
 - name: test/__init__.py
   visible: false
   learner_created: false
@@ -118,6 +98,26 @@ files:
 
     if __name__ == '__main__':
         TestStage6("cconverter.cconverter").run_tests()
+  learner_created: false
+- name: cconverter/cconverter.py
+  visible: true
+  text: |-
+    # write your code here!
+
+    cc_amount = float(input())
+
+    # cc_x_rate = float(input("Please, enter the exchange rate:"))
+    rates = {
+        'RUB': 2.98,
+        'ARS': 0.82,
+        'HNL': 0.17,
+        'AUD': 1.9622,
+        'MAD': 0.208
+    }
+
+    for rate in rates:
+        selling_sum = cc_amount * rates[rate]
+        print('I will get', selling_sum, rate, 'from the sale of', cc_amount, 'conicoins.')
   learner_created: false
 feedback_link: https://hyperskill.org/learn/step/12124#comment
 status: Solved
