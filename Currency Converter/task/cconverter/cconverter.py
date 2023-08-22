@@ -1,5 +1,6 @@
 import requests
 import re
+from colorama import Fore, Style
 
 
 class CurrencyConverter:
@@ -54,12 +55,9 @@ class CurrencyConverter:
             print(self.SYS_MESSAGE_DICT['cache_hit'])
         return self.currency_dict
 
-    @staticmethod
-    def calculate_changed_amount(amount, rate):
-        return round(amount * rate, 2)
-
     def get_currency(self, message, currency_type=None):
-        user_input = input(message).lower()
+        print(Fore.CYAN + "Example: USD, EUR" + Style.RESET_ALL)
+        user_input = input(Fore.GREEN + message + Style.RESET_ALL).lower()
         user_input = re.split(r',| ', user_input)
         if currency_type == 'base':
             for currency in user_input:
@@ -71,7 +69,7 @@ class CurrencyConverter:
         while True:
             user_input = input(message)
             try:
-                user_input = int(user_input)
+                user_input = float(user_input)
             except ValueError:
                 print(self.SYS_MESSAGE_DICT['invalid_input'])
                 continue
@@ -84,45 +82,62 @@ class CurrencyConverter:
 
     @staticmethod
     def get_ui():
-        ui_message_dict = {
-            'select_opt': '\nPlease select an option:',
-            'set_base_currency': '1: Set base currency',
-            'set_target_currency': '2: Set target currency',
-            'set_amount': '3: Set amount',
-            'convert': '4: Convert amount',
-            'exit': '5. Exit'
-        }
+        print("\n" + "=" * 50)
+        print("Currency Converter Menu:")
+        print("=" * 50)
+        print("1: Set base currency")
+        print("2: Set target currency")
+        print("3: Set amount")
+        print("4: Convert amount")
+        print("5: Exit")
+        print("=" * 50)
 
-        for x in ui_message_dict:
-            print(ui_message_dict[x])
+    @staticmethod
+    def calculate_changed_amount(amount, rate):
+        return round(amount * rate, 2)
+
+    def set_base_currency(self):
+        self.base_currency = self.get_currency(self.SYS_MESSAGE_DICT['input_base_currency'], currency_type='base')
+
+    def set_target_currency(self):
+        self.target_currency = self.get_currency(self.SYS_MESSAGE_DICT['input_target_currency'])
+
+    def set_amount(self):
+        self.amount = self.get_amount(self.SYS_MESSAGE_DICT['input_amount'], min_=0)
+
+    def convert_amount(self):
+        if self.base_currency and self.target_currency and self.amount:
+            for base_c in self.base_currency:
+                for target_c in self.target_currency:
+                    rate = self.get_exchange_rate(base_c, target_c)
+                    if rate is None:
+                        print(self.SYS_MESSAGE_DICT['rate_error'])
+                        continue
+                    converted_amount = self.calculate_changed_amount(self.amount, rate[base_c][target_c])
+                    print(f'You received {converted_amount} {target_c.upper()}')
+        else:
+            print(self.SYS_MESSAGE_DICT['conversion_conf'])
+
+    def exit_program(self):
+        exit(self.SYS_MESSAGE_DICT['exit'])
 
     def run(self):
+        print(Fore.YELLOW + "Welcome to Currency Converter!" + Style.RESET_ALL)
+        print("Follow the prompts to convert currency.")
         while True:
             self.get_ui()
-            option = input("> ")
+            option = input(Fore.GREEN + "> " + Style.RESET_ALL)
 
-            if option == '1':
-                self.base_currency = self.get_currency(self.SYS_MESSAGE_DICT['input_base_currency'],
-                                                       currency_type='base')
-            elif option == '2':
-                self.target_currency = self.get_currency(self.SYS_MESSAGE_DICT['input_target_currency'])
-            elif option == '3':
-                self.amount = self.get_amount(self.SYS_MESSAGE_DICT['input_amount'])
-            elif option == '4':
-                if self.base_currency and self.target_currency and self.amount:
-                    for base_c in self.base_currency:
-                        for target_c in self.target_currency:
-                            rate = self.get_exchange_rate(base_c, target_c)
-                            if rate is None:
-                                print(self.SYS_MESSAGE_DICT['rate_error'])
-                                continue
-                            converted_amount = self.calculate_changed_amount(self.amount, rate[base_c][target_c])
-                            print(f'You received {converted_amount} {target_c.upper()}')
-                else:
-                    print(self.SYS_MESSAGE_DICT['conversion_conf'])
-            elif option == '5':
-                print(self.SYS_MESSAGE_DICT['exit'])
-                break
+            options = {
+                '1': self.set_base_currency,
+                '2': self.set_target_currency,
+                '3': self.set_amount,
+                '4': self.convert_amount,
+                '5': self.exit_program
+            }
+
+            if option in options:
+                options[option]()
             else:
                 print(self.SYS_MESSAGE_DICT['invalid_option'])
                 self.get_ui()
