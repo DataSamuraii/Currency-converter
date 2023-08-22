@@ -1,13 +1,14 @@
 import requests
 import re
 from colorama import Fore, Style
+from typing import Dict, Optional, List
 
 
 class CurrencyConverter:
     SYS_MESSAGE_DICT = {
         'input_base_currency': 'Please enter the base currency (or multiple): ',
         'input_target_currency': 'Please enter the target currency (or multiple): ',
-        'input_amount': 'Please enter the amount: ',
+        'input_amount': 'Please enter the amount (bigger than {}): ',
         'cache_check': 'Checking the cache...',
         'cache_miss': 'Sorry, but it is not in the cache!',
         'cache_hit': 'Oh! It is in the cache!',
@@ -28,7 +29,7 @@ class CurrencyConverter:
         self.amount = None
 
     @staticmethod
-    def get_json(base_currency):
+    def get_json(base_currency: str) -> Optional[Dict]:
         try:
             r = requests.get(f'https://www.floatrates.com/daily/{base_currency}.json')
             r.raise_for_status()
@@ -37,7 +38,7 @@ class CurrencyConverter:
             return None
         return r.json()
 
-    def get_exchange_rate(self, base_currency, target_currency):
+    def get_exchange_rate(self, base_currency: str, target_currency: str) -> Optional[Dict[str, Dict[str, float]]]:
         print(self.SYS_MESSAGE_DICT['cache_check'])
         if target_currency not in self.currency_dict[base_currency]:
             print(self.SYS_MESSAGE_DICT['cache_miss'])
@@ -55,7 +56,7 @@ class CurrencyConverter:
             print(self.SYS_MESSAGE_DICT['cache_hit'])
         return self.currency_dict
 
-    def get_currency(self, message, currency_type=None):
+    def get_currency(self, message: str, currency_type=None) -> List[str]:
         print(Fore.CYAN + "Example: USD, EUR" + Style.RESET_ALL)
         user_input = input(Fore.GREEN + message + Style.RESET_ALL).lower()
         user_input = re.split(r',| ', user_input)
@@ -65,9 +66,9 @@ class CurrencyConverter:
                     self.currency_dict[currency] = {}
         return user_input
 
-    def get_amount(self, message, min_=None, max_=None):
+    def get_amount(self, message: str, min_=None, max_=None) -> float:
         while True:
-            user_input = input(message)
+            user_input = input(message.format(min_))
             try:
                 user_input = float(user_input)
             except ValueError:
@@ -81,7 +82,7 @@ class CurrencyConverter:
                 return user_input
 
     @staticmethod
-    def get_ui():
+    def get_ui() -> None:
         print("\n" + "=" * 50)
         print("Currency Converter Menu:")
         print("=" * 50)
@@ -93,19 +94,19 @@ class CurrencyConverter:
         print("=" * 50)
 
     @staticmethod
-    def calculate_changed_amount(amount, rate):
+    def calculate_changed_amount(amount: float, rate: float) -> float:
         return round(amount * rate, 2)
 
-    def set_base_currency(self):
+    def set_base_currency(self) -> None:
         self.base_currency = self.get_currency(self.SYS_MESSAGE_DICT['input_base_currency'], currency_type='base')
 
-    def set_target_currency(self):
+    def set_target_currency(self) -> None:
         self.target_currency = self.get_currency(self.SYS_MESSAGE_DICT['input_target_currency'])
 
-    def set_amount(self):
+    def set_amount(self) -> None:
         self.amount = self.get_amount(self.SYS_MESSAGE_DICT['input_amount'], min_=0)
 
-    def convert_amount(self):
+    def convert_amount(self) -> None:
         if self.base_currency and self.target_currency and self.amount:
             for base_c in self.base_currency:
                 for target_c in self.target_currency:
@@ -118,10 +119,10 @@ class CurrencyConverter:
         else:
             print(self.SYS_MESSAGE_DICT['conversion_conf'])
 
-    def exit_program(self):
+    def exit_program(self) -> None:
         exit(self.SYS_MESSAGE_DICT['exit'])
 
-    def run(self):
+    def run(self) -> None:
         print(Fore.YELLOW + "Welcome to Currency Converter!" + Style.RESET_ALL)
         print("Follow the prompts to convert currency.")
         while True:
