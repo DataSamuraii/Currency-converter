@@ -1,7 +1,7 @@
 import requests
 import re
 from colorama import Fore, Style
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
 
 
 class CurrencyConverter:
@@ -24,6 +24,7 @@ class CurrencyConverter:
 
     def __init__(self):
         self.currency_dict = {}
+        self.available_currency_list = []
         self.base_currency = None
         self.target_currency = None
         self.amount = None
@@ -46,6 +47,10 @@ class CurrencyConverter:
             if r is None:
                 print(self.SYS_MESSAGE_DICT['api_error'])
                 return None
+            self.get_default_currency_list(r)
+            if target_currency not in self.available_currency_list:
+                print(f"{target_currency} is not on the list of available currencies")
+                return None
             rate = r.get(target_currency, {}).get('rate')
             if rate:
                 self.currency_dict[base_currency][target_currency] = rate
@@ -59,12 +64,15 @@ class CurrencyConverter:
     def get_currency(self, message: str, currency_type=None) -> List[str]:
         print(Fore.CYAN + "Example: USD, EUR" + Style.RESET_ALL)
         user_input = input(Fore.GREEN + message + Style.RESET_ALL).lower()
-        user_input = re.split(r',| ', user_input)
+        user_input = re.split(r'[, ]', user_input)
         if currency_type == 'base':
             for currency in user_input:
                 if currency not in self.currency_dict:
                     self.currency_dict[currency] = {}
         return user_input
+
+    def get_default_currency_list(self, json_obj: dict) -> None:
+        self.available_currency_list = [currency_key for currency_key in json_obj.keys()]
 
     def get_amount(self, message: str, min_=None, max_=None) -> float:
         while True:
